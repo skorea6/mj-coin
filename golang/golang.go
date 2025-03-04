@@ -1,8 +1,8 @@
-package main
+package golang
 
 import (
 	"fmt"
-	"mjcoin/person"
+	"mjcoin/golang/person"
 )
 
 func golang() {
