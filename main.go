@@ -4,22 +4,23 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"mjcoin/blockchain"
 	"net/http"
 )
 
 const port string = ":4000"
 
 type homeData struct {
-	PageTitle string
+	PageTitle string // 공유를 위해서는 대문자
+	Blocks    []*blockchain.Block
 }
 
 func home(rw http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("templates/home.html")
-	// go 에는 exception 이 없음 -> 따로 처리해줘야함
-	if err != nil {
-		log.Fatal(err)
-	}
-	tmpl.Execute(rw, homeData{PageTitle: "Home"})
+	tmpl := template.Must(template.ParseFiles("templates/home.html"))
+	tmpl.Execute(rw, homeData{
+		PageTitle: "Home",
+		Blocks:    blockchain.GetBlockchain().AllBlocks(),
+	})
 }
 
 func main() {

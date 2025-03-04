@@ -6,14 +6,14 @@ import (
 	"sync"
 )
 
-type block struct {
+type Block struct {
 	Data     string
 	Hash     string
 	PrevHash string
 }
 
 type blockchain struct {
-	blocks []*block
+	blocks []*Block
 
 	/**
 	blocks []block과 같은 형태로 슬라이스를 선언하면,
@@ -31,7 +31,7 @@ type blockchain struct {
 var b *blockchain  // singleton 패턴
 var once sync.Once // 한번만 사용하기 위함
 
-func (b *block) calculateHash() {
+func (b *Block) calculateHash() {
 	hash := sha256.Sum256([]byte(b.Data + b.PrevHash))
 	b.Hash = fmt.Sprintf("%x", hash)
 }
@@ -44,8 +44,8 @@ func getLatestHash() string {
 	return ""
 }
 
-func createBlock(data string) *block { // 메모리 주소 반환!
-	newBlock := &block{data, "", getLatestHash()}
+func createBlock(data string) *Block { // 메모리 주소 반환!
+	newBlock := &Block{data, "", getLatestHash()}
 	newBlock.calculateHash()
 	return newBlock
 }
@@ -64,6 +64,6 @@ func GetBlockchain() *blockchain {
 	return b
 }
 
-func (b *blockchain) AllBlocks() []*block {
+func (b *blockchain) AllBlocks() []*Block {
 	return b.blocks
 }
