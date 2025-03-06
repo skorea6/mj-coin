@@ -3,10 +3,12 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"mjcoin/blockchain"
 	"mjcoin/utils"
 	"net/http"
+	"strconv"
 )
 
 var port string
@@ -53,7 +55,7 @@ func documentation(rw http.ResponseWriter, req *http.Request) {
 			Payload:     "data:string",
 		},
 		{
-			URL:         url("/blocks/{id}"),
+			URL:         url("/blocks/{height}"),
 			Method:      "GET",
 			Description: "See A Block",
 		},
@@ -79,13 +81,24 @@ func blocks(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func Start(aPort int) {
-	port = fmt.Sprintf(":%d", aPort)
-	handler := http.NewServeMux()
+func block(rw http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	id, err := strconv.Atoi(vars["height"])
+	utils.HandleErr(err)
 
-	handler.HandleFunc("/", documentation)
-	handler.HandleFunc("/blocks", blocks)
+	block := blockchain.GetBlockchain().GetBlock(id)
+	rw.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(rw).Encode(block)
+}
+
+func Start(aPort int) {
+	router := mux.NewRouter()
+	port = fmt.Sprintf(":%d", aPort)
+
+	router.HandleFunc("/", documentation).Methods("GET")
+	router.HandleFunc("/blocks", blocks).Methods("GET", "POST")
+	router.HandleFunc("/blocks/{height:[0-9]+}", block).Methods("GET")
 
 	fmt.Printf("Listening on port http://localhost:%d\n", aPort)
-	log.Fatal(http.ListenAndServe(port, handler))
+	log.Fatal(http.ListenAndServe(port, router))
 }
