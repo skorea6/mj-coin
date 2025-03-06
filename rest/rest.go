@@ -32,6 +32,10 @@ type addBlockBody struct {
 	Message string
 }
 
+type errorResponse struct {
+	ErrorMessage string `json:"errorMessage"`
+}
+
 func (u urlDescriptions) String() string { // interface 코드 구현 (자동 메소드 호출)
 	return "Hello I'm url Descriptions!"
 }
@@ -86,9 +90,14 @@ func block(rw http.ResponseWriter, req *http.Request) {
 	id, err := strconv.Atoi(vars["height"])
 	utils.HandleErr(err)
 
-	block := blockchain.GetBlockchain().GetBlock(id)
+	block, err := blockchain.GetBlockchain().GetBlock(id)
 	rw.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(rw).Encode(block)
+	encoder := json.NewEncoder(rw)
+	if err == blockchain.ErrBlockNotFound {
+		encoder.Encode(errorResponse{fmt.Sprint(err)})
+	} else {
+		encoder.Encode(block)
+	}
 }
 
 func Start(aPort int) {

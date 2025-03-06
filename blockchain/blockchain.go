@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"sync"
 )
@@ -69,6 +70,11 @@ func (b *blockchain) AllBlocks() []*Block {
 	return b.blocks
 }
 
-func (b *blockchain) GetBlock(height int) *Block {
-	return b.blocks[height-1]
+var ErrBlockNotFound = errors.New("block not found")
+
+func (b *blockchain) GetBlock(height int) (*Block, error) {
+	if height > len(b.blocks) {
+		return nil, ErrBlockNotFound
+	}
+	return b.blocks[height-1], nil
 }
